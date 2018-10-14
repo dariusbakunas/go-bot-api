@@ -25,6 +25,8 @@ func (s ServosController) Turn(c *gin.Context) {
 
 	if err != nil || id < 0 || id > 31 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Servo ID must be between 0 and 31"})
+		c.Abort()
+		return
 	}
 
 	// TODO: make this configurable
@@ -36,6 +38,9 @@ func (s ServosController) Turn(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.Abort()
+		return
+
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "OK"})
