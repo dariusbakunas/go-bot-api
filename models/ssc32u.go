@@ -30,8 +30,6 @@ func InitSSC32U(dev string, baud uint, simulate bool) (*SSC32U, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		defer port.Close()
 	}
 
 	ssc := &SSC32U{port: port, simulate: simulate}
@@ -46,6 +44,13 @@ func InitSSC32U(dev string, baud uint, simulate bool) (*SSC32U, error) {
 	log.Printf("Connected: %s", version)
 
 	return ssc, nil
+}
+
+func (s SSC32U) Close() {
+	log.Printf("SSC-32U Closing")
+	if !s.simulate {
+		s.port.Close()
+	}
 }
 
 func (s SSC32U) Write(data string) (int, error) {

@@ -22,6 +22,7 @@ func main() {
 		fmt.Print(parser.Usage(err))
 	} else {
 		ssc32u, err := models.InitSSC32U(*serialPort, uint(*baudRate), *simulate)
+		defer ssc32u.Close()
 
 		if err != nil {
 			log.Fatalf("failed to open serial: %v", err)
