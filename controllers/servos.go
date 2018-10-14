@@ -32,9 +32,13 @@ func (s ServosController) Turn(c *gin.Context) {
 		return
 	}
 
+	// TODO: make this configurable
+	pulseRange := 2100.0 - 900
+	pulse :=  int(900 + pulseRange/180.0 * float64(angle))
+
 	timeString := c.Query("time")
 
-	var format string
+	var command string
 	var time int
 
 	if len(timeString) > 0 {
@@ -46,16 +50,10 @@ func (s ServosController) Turn(c *gin.Context) {
 			return
 		}
 
-		format = "#%d P%d T%d\r"
+		command = fmt.Sprintf("#%d P%d T%d\r", id, pulse, time)
 	} else {
-		format = "#%d P%d \r"
+		command = fmt.Sprintf("#%d P%d \r", id, pulse)
 	}
-
-	// TODO: make this configurable
-	pulseRange := 2100.0 - 900
-	pulse :=  int(900 + pulseRange/180.0 * float64(angle))
-
-	command := fmt.Sprintf(format, id, pulse, time)
 	_, err = s.ssc32u.Write(command)
 
 	if err != nil {
