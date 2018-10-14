@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dariusbakunas/go-bot-api/models"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -37,6 +38,7 @@ func (s ServosController) Turn(c *gin.Context) {
 	_, err = s.ssc32u.Write(command)
 
 	if err != nil {
+		log.Fatal(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		c.Abort()
 		return
