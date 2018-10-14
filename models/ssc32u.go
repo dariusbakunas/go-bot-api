@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/jacobsa/go-serial/serial"
 	"io"
 	"log"
@@ -8,9 +9,10 @@ import (
 
 type SSC32U struct{
 	port io.ReadWriteCloser
+	simulate bool
 }
 
-func InitSSC32U(dev string, baud uint) (*SSC32U, error) {
+func InitSSC32U(dev string, baud uint, simulate bool) (*SSC32U, error) {
 	options := serial.OpenOptions{
 		PortName: dev,
 		BaudRate: baud,
@@ -19,15 +21,19 @@ func InitSSC32U(dev string, baud uint) (*SSC32U, error) {
 		MinimumReadSize: 8,
 	}
 
-	port, err := serial.Open(options)
+	var port io.ReadWriteCloser
 
-	if err != nil {
-		return nil, err
+	if !simulate {
+		port, err := serial.Open(options)
+
+		if err != nil {
+			return nil, err
+		}
+
+		defer port.Close()
 	}
 
-	defer port.Close()
-
-	ssc := &SSC32U{port: port}
+	ssc := &SSC32U{port: port, simulate: simulate}
 
 	ssc.Write("VER\r")
 	version, err := ssc.Read(128)
@@ -41,18 +47,28 @@ func InitSSC32U(dev string, baud uint) (*SSC32U, error) {
 	return ssc, nil
 }
 
-func (s SSC32U) Write(data string) (*int, error) {
+func (s SSC32U) Write(data string) (int, error) {
+	if s.simulate {
+		message := fmt.Sprintf("Writing: %s", data)
+		log.Print(message)
+		return len(message), nil
+	}
+
 	bytes := []byte(data)
 	n, err := s.port.Write(bytes)
 
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
-	return &n, nil
+	return n, nil
 }
 
 func (s SSC32U) Read(size uint) (string, error) {
+	if s.simulate {
+		return "NOP", nil
+	}
+
 	buffer := make([]byte, size)
 	n, err := s.port.Read(buffer)
 

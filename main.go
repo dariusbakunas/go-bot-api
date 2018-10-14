@@ -14,12 +14,14 @@ func main() {
 	serialPort := parser.String("s", "serial-port", &argparse.Options{Required: false, Help: "USB Serial Port", Default: "/dev/ttyUSB0"})
 	listenPort := parser.Int("p", "server-port", &argparse.Options{Required: false, Help: "Listening port", Default: 8080})
 	baudRate := parser.Int("b", "baud-rate",  &argparse.Options{Required: false, Help: "Baud rate", Default: 115200})
+	simulate := parser.Flag("d", "simulate", &argparse.Options{Required: false, Help: "Use fake serial port if set"})
+
 	err := parser.Parse(os.Args)
 
 	if err != nil {
 		fmt.Print(parser.Usage(err))
 	} else {
-		ssc32u, err := models.InitSSC32U(*serialPort, uint(*baudRate))
+		ssc32u, err := models.InitSSC32U(*serialPort, uint(*baudRate), *simulate)
 
 		if err != nil {
 			log.Fatalf("failed to open serial: %v", err)
