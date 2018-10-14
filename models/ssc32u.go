@@ -22,9 +22,10 @@ func InitSSC32U(dev string, baud uint, simulate bool) (*SSC32U, error) {
 	}
 
 	var port io.ReadWriteCloser
+	var err error
 
 	if !simulate {
-		port, err := serial.Open(options)
+		port, err = serial.Open(options)
 
 		if err != nil {
 			return nil, err
