@@ -14,6 +14,8 @@ type ServosController struct{
 }
 
 func (s ServosController) Turn(c *gin.Context) {
+	var err error
+
 	angle, err := strconv.Atoi(c.Query("angle"))
 
 	if err != nil || angle < 0 || angle > 180 {
@@ -30,11 +32,30 @@ func (s ServosController) Turn(c *gin.Context) {
 		return
 	}
 
+	timeString := c.Query("time")
+
+	var format string
+	var time int
+
+	if len(timeString) > 0 {
+		time, err = strconv.Atoi(timeString)
+
+		if err != nil || time < 0 || time > 65535 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Time must be between 0 and 65535"})
+			c.Abort()
+			return
+		}
+
+		format = "#%d P%d T%d\r"
+	} else {
+		format = "#%d P%d \r"
+	}
+
 	// TODO: make this configurable
 	pulseRange := 2100.0 - 900
 	pulse :=  int(900 + pulseRange/180.0 * float64(angle))
 
-	command := fmt.Sprintf("#%d P%d \r", id, pulse)
+	command := fmt.Sprintf(format, id, pulse, time)
 	_, err = s.ssc32u.Write(command)
 
 	if err != nil {
