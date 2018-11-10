@@ -33,8 +33,8 @@ func GetPulse(c *gin.Context) (int, error) {
 		}
 
 		// TODO: make this configurable
-		pulseRange := 2500.0 - 500
-		pulse :=  int(500 + pulseRange/180.0 * float64(angle))
+		pulseRange := 2500.0 - 580
+		pulse :=  int(580 + pulseRange/180.0 * float64(angle))
 		return pulse, nil
 	}
 }
