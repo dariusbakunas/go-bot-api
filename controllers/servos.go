@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dariusbakunas/go-bot-api/models"
 	"github.com/gin-gonic/gin"
@@ -13,13 +14,38 @@ type ServosController struct{
 	ssc32u *models.SSC32U
 }
 
+func GetPulse(c *gin.Context) (int, error) {
+	pulseStr := c.Query("pulse")
+
+	if pulseStr != "" {
+		pulse, err := strconv.Atoi(pulseStr)
+
+		if err != nil {
+			return 0, err
+		}
+
+		return pulse, nil
+	} else {
+		angle, err := strconv.Atoi(c.Query("angle"))
+
+		if err != nil || angle < 0 || angle > 180 {
+			return 0, errors.New("invalid angle")
+		}
+
+		// TODO: make this configurable
+		pulseRange := 2500.0 - 500
+		pulse :=  int(500 + pulseRange/180.0 * float64(angle))
+		return pulse, nil
+	}
+}
+
 func (s ServosController) Turn(c *gin.Context) {
 	var err error
 
-	angle, err := strconv.Atoi(c.Query("angle"))
+	pulse, err := GetPulse(c)
 
-	if err != nil || angle < 0 || angle > 180 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid angle"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		c.Abort()
 		return
 	}
@@ -31,10 +57,6 @@ func (s ServosController) Turn(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	// TODO: make this configurable
-	pulseRange := 2100.0 - 900
-	pulse :=  int(900 + pulseRange/180.0 * float64(angle))
 
 	timeString := c.Query("time")
 
